@@ -1,0 +1,303 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml" xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<!doctype html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@3.x/css/materialdesignicons.min.css"/>
+</head>
+
+<body>
+<div id="app">
+    <v-app>
+        <v-main>
+            <v-container fluid>
+                <v-row>
+                    <!-- Bagian Kiri -->
+                    <v-col cols="12" md="4">
+                        <v-row>
+                            <v-col>
+                                <v-card class="pa-4" elevation="4">
+                                    <v-card-text>
+                                        <v-avatar size="100">
+                                            <img src="https://yt3.googleusercontent.com/-CFTJHU7fEWb7BYEb6Jh9gm1EpetvVGQqtof0Rbh-VQRIznYYKJxCaqv_9HeBcmJmIsp2vOO9JU=s900-c-k-c0x00ffffff-no-rj" alt="Avatar">
+                                        </v-avatar>
+                                        <div>Nama: {{ studentName }}</div>
+                                        <div>Email: {{ studentEmail }}</div>
+                                    </v-card-text>
+                                    <v-card-footer>
+                                        <v-btn color="warning" @click="logout">Logout</v-btn>
+                                    </v-card-footer>
+
+                                </v-card>
+                            </v-col>
+                        </v-row>
+
+                        <v-row>
+                            <v-col>
+                                <v-card elevation="4">
+                                    <v-col class="pa-4" v-for="(image, index) in fotoList" :key="index">
+                                        <span>{{ image[0] }}</span>
+                                        <v-img :lazy-src="image[1]" :src="image[1]"></v-img>
+                                    </v-col>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </v-col>
+
+                    <!-- Bagian Kanan -->
+                    <v-col cols="12" md="8">
+                        <v-card class="pa-4" elevation="2">
+                            <v-toolbar flat color="primary" class="white--text">
+                                <v-toolbar-title>Kelengkapan</v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text>
+                                <v-form @submit.prevent="submitKelengkapan">
+                                    <v-file-input v-model="fotoRapor" label="Unggah Foto Rapor/Bukti Nilai"></v-file-input>
+                                    <v-file-input v-model="fotoKTP" label="Unggah Foto KTP"></v-file-input>
+                                    <v-file-input v-model="fotoKK" label="Unggah Foto KK"></v-file-input>
+                                    <v-file-input v-model="fotoAkteKelahiran" label="Unggah Foto Akte Kelahiran"></v-file-input>
+                                    <v-file-input v-model="fotoSuratKelulusan" label="Unggah Surat Kelulusan"></v-file-input>
+                                    <v-text-field v-model="nilai" label="Nilai"></v-text-field>
+                                    <v-text-field v-model="namaSekolahSebelumnya" label="Nama Sekolah Sebelumnya"></v-text-field>
+                                    <v-text-field v-model="alamatSekolahSebelumnya" label="Alamat Sekolah Sebelumnya"></v-text-field>
+                                    <v-btn type="submit" color="primary">Submit</v-btn>
+                                </v-form>
+                            </v-card-text>
+
+
+                            <v-card-footer>
+                            </v-card-footer>
+                        </v-card>
+                        <v-card class="mt-5 pa-5" elevation="2">
+                            <v-toolbar flat color="primary" class="white--text">
+                                <v-toolbar-title>Card Prestasi</v-toolbar-title>
+                                <v-spacer></v-spacer>
+                                <v-btn icon @click="showDialog = true">
+                                    <v-icon>mdi-plus</v-icon>
+                                </v-btn>
+                            </v-toolbar>
+                            <v-data-table :headers="headers" :items="items" item-key="id"></v-data-table>
+                        </v-card>
+                    </v-col>
+                </v-row>
+
+                <!-- Dialog Tambah Prestasi -->
+                <v-dialog v-model="showDialog" max-width="500px">
+                    <v-card>
+                        <v-card-title class="headline">Tambah Prestasi</v-card-title>
+                        <v-card-text>
+                            <v-form>
+                                <v-text-field v-model="newPrestasi.deskripsi" label="Deskripsi Prestasi"></v-text-field>
+                                <v-text-field v-model="newPrestasi.penghargaan" label="Deskripsi Penghargaan"></v-text-field>
+                                <v-text-field v-model="newPrestasi.nilai" label="Nilai Prestasi"></v-text-field>
+                            </v-form>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-btn color="blue darken-1" text @click="showDialog = false">Close</v-btn>
+                            <v-btn color="blue darken-1" text @click="submitPrestasi">Submit</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+            </v-container>
+            <v-snackbar
+                    top
+                    v-model="snackbar"
+                    color="black"
+                    timeout="3000"
+            >
+                {{ snackbarText }}
+                <template v-slot:action="{ attrs }">
+                    <v-btn text v-bind="attrs" @click="snackbar = false">Close</v-btn>
+                </template>
+            </v-snackbar>
+        </v-main>
+    </v-app>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    axios.interceptors.request.use(config => {
+        console.log(config)
+        const token = localStorage.getItem('SESSION');
+        if (token) {
+            config.headers['X-Token'] = token;
+        }
+        return config;
+    });
+
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data() {
+            return {
+                studentName: "",
+                studentEmail: "",
+                snackbar: false,
+                snackbarText: "",
+                fotoList:[],
+                headers: [
+                    { text: 'Deskripsi Prestasi', value: 'prestasi' },
+                    { text: 'Deskripsi Penghargaan', value: 'penghargaan' },
+                    { text: 'Nilai', value: 'nilai' }
+                ],
+                items: [
+                    { id: 1, prestasi: 'Juara 1 Lomba Matematika', penghargaan: 'Piala Emas', nilai: '95' },
+                    { id: 2, prestasi: 'Juara 2 Lomba Bahasa Inggris', penghargaan: 'Medali Perak', nilai: '90' },
+                    { id: 3, prestasi: 'Juara 3 Lomba Seni Lukis', penghargaan: 'Medali Perunggu', nilai: '85' }
+                ],
+                showDialog: false,
+                newPrestasi: {
+                    deskripsi: '',
+                    penghargaan: '',
+                    nilai: ''
+                },
+                fotoRapor: "",
+                fotoKTP: "",
+                fotoKK: "",
+                fotoAkteKelahiran: "",
+                fotoSuratKelulusan: "",
+                nilai: "",
+                namaSekolahSebelumnya: '',
+                alamatSekolahSebelumnya: ''
+            };
+        },
+        async mounted(){
+            await this.getKelengkapanBySession();
+            await this.getUserByToken()
+        },
+        methods: {
+            async getUserByToken(){
+                if(localStorage.getItem("SESSION")){
+                    let getInfo = await axios.get("/api/v1/students/byToken?sessionToken=" + localStorage.getItem("SESSION"))
+                    if(getInfo.data.status === 200){
+                        this.studentName = getInfo.data.name
+                    } else {
+                        window.location.href = "/login"
+                        localStorage.removeItem("SESSION")
+                    }
+                }else{
+                    if(localStorage.getItem("SESSION") === null){ window.location.href = "/login" }
+                }
+            },
+            base64ToFile(base64String, fileName) {
+                if(base64String === null) return null;
+                const byteCharacters = atob(base64String);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: 'image/jpeg' });
+                return new File([blob], fileName, { type: 'image/jpeg' });
+            },
+            async getKelengkapanBySession() {
+                try {
+                    const sessionToken = localStorage.getItem("SESSION");
+                    if(sessionToken === null){ window.location.href = "/login" }
+                    const response = await axios.get('/api/v1/students/kelengkapan/'+sessionToken);
+                    if(response.status !== 200){ window.location.href = "/login" }
+
+                    const data = response.data.data;
+
+                    this.fotoList.push(["Foto Rapor",'data:image/jpeg;base64,'+data.fotoRapor]);
+                    this.fotoList.push(["Foto KTP",'data:image/jpeg;base64,'+data.fotoKtp]);
+                    this.fotoList.push(["Foto KK",'data:image/jpeg;base64,'+data.fotoKk]);
+                    this.fotoList.push(["Foto Akte Kelahiran",'data:image/jpeg;base64,'+data.fotoAkteKelahiran]);
+                    this.fotoList.push(["Foto Surat Kelulusan",'data:image/jpeg;base64,'+data.fotoSuratKelulusan]);
+
+                    this.fotoRapor = this.base64ToFile(data.fotoRapor, 'fotoRapor.jpg') ?? "";
+                    this.fotoKTP = this.base64ToFile(data.fotoKtp, 'fotoKTP.jpg') ?? "";
+                    this.fotoKK = this.base64ToFile(data.fotoKk, 'fotoKK.jpg') ?? "";
+                    this.fotoAkteKelahiran = this.base64ToFile(data.fotoAkteKelahiran, 'fotoAkteKelahiran.jpg') ?? "";
+                    this.fotoSuratKelulusan = this.base64ToFile(data.fotoSuratKelulusan, 'fotoSuratKelulusan.jpg') ?? "";
+                    this.nilai = data.nilai ?? 0;
+                    this.namaSekolahSebelumnya = data.namaSekolahSebelumnya ?? "";
+                    this.alamatSekolahSebelumnya = data.alamatSekolahSebelumnya ?? "";
+                } catch (error) {
+                    console.error('Get kelengkapan by ID error:', error.message);
+                }
+            },
+            logout() {
+            },
+            async getStudentByToken() {
+                try {
+                    const response = await axios.get('/api/v1/prestasi/' + localStorage.getItem("SESSION"), {
+                        params: {
+                            sessionToken: 'token_sesi_anda'
+                        }
+                    });
+                    this.student = response.data.data;
+                } catch (error) {
+                    console.error('Gagal mengambil data student:', error);
+                }
+            },
+            submitPrestasi() {
+                axios.post('/api/v1/prestasi/', {
+                    deskripsi: newPrestasi.deskripsi,
+                    deskripsiPenghargaan: newPrestasi.penghargaan,
+                    nilai: newPrestasi.nilai,
+                    idStudent: 12345
+                })
+                    .then(response => {
+                        console.log('Prestasi berhasil ditambahkan:', response.data);
+                    })
+                    .catch(error => {
+                        console.error('Gagal menambahkan prestasi:', error);
+                    });
+
+                console.log('Data baru:', this.newPrestasi);
+                this.newPrestasi = { deskripsi: '', penghargaan: '', nilai: '' };
+                this.showDialog = false;
+            },
+            async submitKelengkapan() {
+                const token = localStorage.getItem('SESSION');
+
+                const formData = new FormData();
+                formData.append('fotoRapor', this.fotoRapor);
+                formData.append('fotoKTP', this.fotoKTP);
+                formData.append('fotoKK', this.fotoKK);
+                formData.append('fotoAkteKelahiran', this.fotoAkteKelahiran);
+                formData.append('fotoSuratKelulusan', this.fotoSuratKelulusan);
+                formData.append('nilai', this.nilai);
+                formData.append('namaSekolahSebelumnya', this.namaSekolahSebelumnya);
+                formData.append('alamatSekolahSebelumnya', this.alamatSekolahSebelumnya);
+
+                try {
+                    const response = await axios.post('/api/v1/students/kelengkapan/data-profil-kelengkapan', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            'x-token': token
+                        }
+                    });
+
+                    if(response.status !== 200){
+                        throw new Error("Failed submit kelengkapan")
+                    }
+
+                    if (response.status === 200) {
+                        this.snackbar = true
+                        this.snackbarText = response.data.statusMessage
+                    }
+                } catch (error) {
+                    console.error('Submit kelengkapan error:', error);
+                }
+            }
+        }
+    });
+</script>
+
+<!--<style>-->
+<!--    .container {-->
+<!--        height: 100vh;-->
+<!--        display: flex;-->
+<!--        justify-content: center;-->
+<!--        align-items: center;-->
+<!--    }-->
+<!--</style>-->
+

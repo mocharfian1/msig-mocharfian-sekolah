@@ -1,0 +1,118 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml" xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<!doctype html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@3.x/css/materialdesignicons.min.css"/>
+</head>
+
+<body>
+    <v-app id="app">
+        <v-main class="background">
+            <v-container fill-height fluid>
+                <v-row justify="center" align="center">
+                    <v-col cols="12" sm="8" md="6">
+                        <v-card v-if="registerForm === 'FORM'">
+                            <v-card-title>Registration Form</v-card-title>
+                            <v-card-text>
+                                <v-form @submit.prevent="registerStudent">
+                                    <v-text-field v-model="student.email" label="Email" required></v-text-field>
+                                    <v-text-field v-model="student.password" label="Password" type="password" required></v-text-field>
+                                    <v-text-field v-model="student.name" label="Name" required></v-text-field>
+                                    <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="10" transition="scale-transition" offset-y>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-text-field v-model="student.birthDate" label="Birth Date" readonly v-bind="attrs" v-on="on" required></v-text-field>
+                                        </template>
+                                        <v-date-picker v-model="student.birthDate" @input="menu = false"></v-date-picker>
+                                    </v-menu>
+                                    <v-select v-model="student.gender" :items="genders" label="Gender" required></v-select>
+                                    <v-text-field v-model="student.address" label="Address" required></v-text-field>
+                                    <v-btn type="submit" color="primary">Register</v-btn>
+                                </v-form>
+                            </v-card-text>
+                        </v-card>
+                        <v-card v-if="registerForm === 'MESSAGE'">
+                            <v-card-title :color="registrationResponse.color">Pesan {{ registrationResponse.color === 'success' ? 'sukses':'error' }}</v-card-title>
+                            <v-card-text>
+                                {{ statusMessage }}. Kembali <a href="/register">Registrasi</a> atau <a href="/login">Login</a>
+                            </v-card-text>
+                        </v-card>
+                        <v-snackbar top v-model="successSnackbar" :timeout="5000" :color="registrationResponse.color">
+                            {{ statusMessage }}
+                            <template v-slot:action="{ attrs }">
+                                <v-btn text v-bind="attrs" @click="successSnackbar = false">Close</v-btn>
+                            </template>
+                        </v-snackbar>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-main>
+    </v-app>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data() {
+            return {
+                registrationResponse: {},
+                statusMessage: '',
+                registerForm: 'FORM',
+                student: {
+                    email: '',
+                    password: '',
+                    name: '',
+                    birthDate: null,
+                    gender: '',
+                    address: ''
+                },
+                genders: ['Male', 'Female', 'Other'],
+                menu: false,
+                successSnackbar: false
+            };
+        },
+        methods: {
+            registerStudent() {
+                axios.post('/api/v1/students/register', this.student)
+                    .then(response => {
+                        if(response.data.status === 200){
+                            this.registerForm = "MESSAGE";
+                        }
+                        this.successSnackbar = true;
+                        this.statusMessage = response.data.statusMessage;
+                        this.registrationResponse = {
+                            color: 'success'
+                        }
+                    })
+                    .catch(error => {
+                        this.successSnackbar = true;
+                        this.statusMessage = error.response.data.statusMessage;
+                        this.registrationResponse = {
+                            color: 'error'
+                        }
+                    });
+            }
+        }
+    });
+</script>
+
+<style scoped>
+    .card-title {
+        background-color: #1976D2;
+        color: white;
+        padding: 10px;
+    }
+    .background {
+        background-image: url('https://png.pngtree.com/background/20210715/original/pngtree-new-semester-enrollment-hd-background-picture-image_1319001.jpg');
+        background-size: cover;
+        background-position: center;
+    }
+</style>
+

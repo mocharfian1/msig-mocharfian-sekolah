@@ -1,0 +1,168 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml" xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<!doctype html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@3.x/css/materialdesignicons.min.css"/>
+</head>
+
+<body>
+<div id="app">
+    <v-app>
+        <!-- Navigation Drawer -->
+        <v-navigation-drawer app v-model="drawer">
+            <v-list>
+                <v-list-item v-for="item in items" :key="item.title" @click="selectMenuItem(item)">
+                    <v-list-item-icon>
+                        <v-icon>{{ item.icon }}</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>{{ item.title }}</v-list-item-title>
+                </v-list-item>
+            </v-list>
+        </v-navigation-drawer>
+
+        <!-- App Bar -->
+        <v-app-bar app>
+            <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+            <v-toolbar-title>Admin Panel</v-toolbar-title>
+        </v-app-bar>
+
+        <!-- Main Content -->
+        <v-main>
+            <v-container>
+                <!-- Dashboard Content -->
+                <div v-if="selectedMenuItem === 'Dashboard'">
+                    <v-card cols="12">
+                        <v-data-table
+                                :headers="headers"
+                                :items="dataDashboard"
+                                :sort-by="['nilai']"
+                                :sort-desc="[true]"
+                        ></v-data-table>
+                    </v-card>
+
+                </div>
+
+                <!-- Daftar Siswa Content -->
+                <div v-if="selectedMenuItem === 'Daftar Siswa'">
+                    <h1>Daftar Siswa</h1>
+                    <v-data-table
+                            :headers="headers"
+                            :items="dataSiswa"
+                    ></v-data-table>
+                </div>
+
+                <!-- Setting Content -->
+                <div v-if="selectedMenuItem === 'Setting'">
+                    <h1>Setting</h1>
+                    <p>Ini adalah halaman pengaturan.</p>
+                    <!-- Tambahkan konten setting di sini -->
+                </div>
+
+                <!-- Galeri Dokumen Content -->
+                <div v-if="selectedMenuItem === 'Galeri Dokumen'">
+                    <h1>Galeri Dokumen</h1>
+                    <p>Ini adalah halaman galeri dokumen.</p>
+                    <!-- Tambahkan konten galeri dokumen di sini -->
+                    <v-carousel>
+                        <v-carousel-item v-for="(item, index) in dokumen" :key="index">
+                            <v-img :src="item.url" aspect-ratio="1"></v-img>
+                        </v-carousel-item>
+                    </v-carousel>
+                </div>
+            </v-container>
+        </v-main>
+    </v-app>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data() {
+            return {
+                drawer: false,
+                selectedMenuItem: '',
+                headers: [
+                    { text: 'Email', value: 'email' },
+                    { text: 'Nama', value: 'name' },
+                    { text: 'Tanggal Lahir', value: 'birthDate' },
+                    { text: 'Jenis Kelamin', value: 'gender' },
+                    { text: 'Alamat', value: 'address' },
+                    { text: 'Nilai', value: 'nilai' }
+                ],
+                dataDashboard: [
+
+                ],
+                dataSiswa: [
+                    { nama: 'Siswa 1', nilai: 90 },
+                    { nama: 'Siswa 2', nilai: 85 },
+                    { nama: 'Siswa 3', nilai: 95 },
+                ],
+                search: '',
+                items: [
+                    { title: 'Dashboard', icon: 'mdi-view-dashboard' },
+                    { title: 'Daftar Siswa', icon: 'mdi-account-group' },
+                    { title: 'Setting', icon: 'mdi-settings' },
+                    { title: 'Galeri Dokumen', icon: 'mdi-file-image' },
+                ],
+                siswaHeaders: [
+                    { text: 'Nama', value: 'nama' },
+                    { text: 'Kelas', value: 'kelas' },
+                    { text: 'Nilai', value: 'nilai' }
+                ],
+                siswaData: [
+                    { nama: 'John Doe', kelas: '12A', nilai: 85 },
+                    { nama: 'Jane Doe', kelas: '11B', nilai: 90 },
+                    { nama: 'Alice Smith', kelas: '10C', nilai: 88 }
+                ],
+                dokumen: [
+                    { url: 'https://via.placeholder.com/300' },
+                    { url: 'https://via.placeholder.com/400' },
+                    { url: 'https://via.placeholder.com/500' },
+                    { url: 'https://via.placeholder.com/600' },
+                    { url: 'https://via.placeholder.com/700' }
+                ]
+            }
+        },
+        mounted(){
+            this.fetchSiswa()
+            this.fetchSiswaSortByNilai()
+        },
+        methods: {
+            selectMenuItem(item) {
+                this.selectedMenuItem = item.title;
+                this.drawer = false;
+            },
+            async fetchSiswa() {
+                try {
+                    const response = await axios.get('/api/v1/students');
+
+                    this.dataSiswa = response.data.data;
+                } catch (error) {
+                    console.error('Terjadi kesalahan:', error);
+                }
+            },
+            async fetchSiswaSortByNilai() {
+                try {
+                    const response = await axios.get('/api/v1/students/with-kelengkapan');
+
+                    this.dataDashboard = response.data;
+                } catch (error) {
+                    console.error('Terjadi kesalahan:', error);
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+</style>
+

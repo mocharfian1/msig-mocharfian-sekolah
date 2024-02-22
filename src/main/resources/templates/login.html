@@ -1,0 +1,102 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml" xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<!doctype html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@3.x/css/materialdesignicons.min.css"/>
+</head>
+
+<body>
+<div id="app">
+    <v-app>
+        <v-main>
+            <v-container>
+                <v-layout align-center justify-center>
+                    <v-flex xs12 sm8 md4>
+                        <v-card class="elevation-12">
+                            <v-toolbar color="primary" dark flat>
+                                <v-toolbar-title>Login</v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text>
+                                <v-form @submit.prevent="login">
+                                    <v-text-field v-model="email" label="Email" type="email" required></v-text-field>
+                                    <v-text-field v-model="password" label="Password" type="password" required></v-text-field>
+                                    <v-btn color="primary" dark block type="submit">Login</v-btn>
+                                </v-form>
+                            </v-card-text>
+                            <v-card-text>
+                                <v-card-footer/>
+                            </v-card-text>
+                        </v-card>
+                        <v-snackbar
+                                top
+                                v-model="snackbar"
+                                color="error"
+                                timeout="3000"
+                        >
+                            {{ snackbarText }}
+                            <template v-slot:action="{ attrs }">
+                                <v-btn text v-bind="attrs" @click="snackbar = false">Close</v-btn>
+                            </template>
+                        </v-snackbar>
+                    </v-flex>
+                </v-layout>
+            </v-container>
+        </v-main>
+    </v-app>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data() {
+            return {
+                email: '',
+                password: '',
+                snackbar: false,
+                snackbarText: '',
+            }
+        },
+        methods: {
+            async login() {
+                try {
+                    const response = await axios.post('/api/v1/students/login', {
+                        email: this.email,
+                        password: this.password
+                    });
+
+                    if(response.data.status === 200){
+                        console.log(response)
+                        localStorage.setItem("SESSION", response.headers['x-token'])
+                        window.location = "/"
+                    }else{
+                        this.snackbar = true;
+                        this.snackbarText = response.data.message || 'Login failed.';
+                    }
+                } catch (error) {
+                    console.error('Login gagal:', error);
+                    this.snackbar = true;
+                    this.snackbarText = error.response.data.statusMessage || 'Login Failed. (Exception)';
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+    .container {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+

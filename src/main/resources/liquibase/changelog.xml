@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="createTableStudents" author="Moch Arfian">
+        <createTable tableName="student">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="password" type="varchar(255)" />
+            <column name="name" type="varchar(255)" />
+            <column name="birth_date" type="date" />
+            <column name="gender" type="varchar(10)" />
+            <column name="address" type="varchar(255)" />
+            <column name="session_token" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-kelengkapan-table" author="Moch Arfian">
+        <createTable tableName="kelengkapan">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_student" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="foto_rapor" type="VARBINARY(MAX)"/>
+            <column name="foto_ktp" type="VARBINARY(MAX)"/>
+            <column name="foto_kk" type="VARBINARY(MAX)"/>
+            <column name="foto_akte_kelahiran" type="VARBINARY(MAX)"/>
+            <column name="foto_surat_kelulusan" type="VARBINARY(MAX)"/>
+            <column name="nilai" type="INT"/>
+            <column name="nama_sekolah_sebelumnya" type="NVARCHAR(255)"/>
+            <column name="alamat_sekolah_sebelumnya" type="NVARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ChangeSet for adding foreign key constraint -->
+    <changeSet id="add-foreign-key-constraint" author="Moch Arfian">
+        <addForeignKeyConstraint baseTableName="kelengkapan"
+                                 baseColumnNames="id_student"
+                                 constraintName="fk_kelengkapan_student"
+                                 referencedTableName="student"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="create-prestasi-table" author="yourname">
+        <createTable tableName="prestasi">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_student" type="INT"/>
+            <column name="deskripsi_prestasi" type="NVARCHAR(255)"/>
+            <column name="deskripsi_penghargaan" type="NVARCHAR(255)"/>
+            <column name="nilai" type="INT"/>
+        </createTable>
+    </changeSet>
+
+
+    <!-- Tambahkan changeSet lain jika diperlukan -->
+
+</databaseChangeLog>
